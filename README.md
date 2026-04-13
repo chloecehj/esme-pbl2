@@ -16,18 +16,16 @@ Our application allows users to play and simulate a bid system where the lowest 
 Instructions on how to get this project running on a fresh machine.
 
 1. **Clone the repo:**\
-   git clone \[your-repo-link]\
-   cd \[project-folder]
+   copy-paste the code in VScode
 
 2. **Setup Virtual Environment:**\
-   python -m venv .venv\
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   python libraries
 
 3. **Install Dependencies:**\
-   pip install -r requirements.txt
+   make sure the CSV files are in the same folder as the two python codes
 
 4. **Run Application:**\
-   python main.py
+   python interface.py
 
 
 ## **🛠️ Technical Architecture**
@@ -45,9 +43,12 @@ Explain how your code is organized. An "Architect-level" README should describe 
 
 How can a user verify the code works?
 
-- List any test scripts included (e.g., pytest tests/).
-
-- Describe the "Happy Path" inputs for the demo.
+- If we run the code, we should have no errors and in the demo part (for example) we should have:
+30 bids are loaded displayed
+The BST in-order traversal showing all prices sorted from lowest to highest
+At least one price marked Unique
+A winner displayed with their price, successor and predecessor in the BST
+Seller revenue and per-player costs
 
 
 ## **📦 Dependencies**
