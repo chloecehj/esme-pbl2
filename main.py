@@ -150,39 +150,45 @@ def run_round(bids, base_cost=1.0, alpha=5.0):
 # 4. MULTI-ROUND SIMULATION
 # ==========================================
 def run_multi_rounds(rounds_data, base_cost=1.0, alpha=5.0):
-    # Variables to track long-term statistics across multiple rounds.
     player_stats = {}
     round_results = []
     revenues = []
 
     for round_id, bids in rounds_data.items():
-        # Execute the round logic
+        # run the round and add the round id into the result dict
         result = run_round(bids, base_cost, alpha)
-        round_results.append((round_id, result))
+        result["round_id"] = round_id
+        round_results.append(result)
         revenues.append(result["revenue"])
 
         winner = result["winner"]
         winner_price = result["winner_price"]
 
-        # Update the lifetime stats for each participant
         for player, price in bids:
-            # Initialize the player's profile if it doesn't exist yet
             if player not in player_stats:
                 player_stats[player] = {"wins": 0, "total_cost": 0.0, "total_profit": 0.0}
 
             cost = result["costs"].get(player, 0)
             player_stats[player]["total_cost"] += cost
 
-            # Calculate Net Profit:
-            # If they win, they gain the item's value (price) minus their entry fee.
-            # If they lose, they just lose their entry fee.
             if player == winner:
                 player_stats[player]["wins"] += 1
                 player_stats[player]["total_profit"] += (winner_price - cost)
             else:
                 player_stats[player]["total_profit"] -= cost
 
-    return player_stats, round_results, revenues
+    # build summary with win rate and average profit per round
+    n_rounds = len(round_results)
+    summary = {}
+    for p, s in player_stats.items():
+        summary[p] = {
+            "wins":       s["wins"],
+            "win_rate":   s["wins"] / n_rounds,
+            "avg_cost":   s["total_cost"] / n_rounds,
+            "avg_profit": s["total_profit"] / n_rounds,
+        }
+
+    return summary, round_results, revenues
 
 # ==========================================
 # 5. CSV DATA LOADERS
