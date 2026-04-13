@@ -34,13 +34,11 @@ Instructions on how to get this project running on a fresh machine.
 
 Explain how your code is organized. An "Architect-level" README should describe the separation of concerns.
 
-- **main.py**: Entry point of the application.
+- **main.py**: The core logic of the application. It contains the BST implementation
 
-- **logic/**: Contains core algorithms and data processing.
+- **interface.py**: The graphical interface built with Tkinter.
 
-- **ui/**: Handles user interactions (CLI/GUI).
-
-- **utils/**: Helper functions and shared constants.
+- The CSV files that have to be stored in the same folder as the code
 
 
 ## **🧪 Testing & Validation**
@@ -56,13 +54,18 @@ How can a user verify the code works?
 
 List the main third-party libraries used and _why_ they were chosen:
 
-- library\_name: \[Reason for use]
+- tkinter: build the entire graphical interface
+- csv: read the CSV files
+- threading: run the 500-round simulation in the background so the interface does not freeze.
+- random: generate bids
+- os: build file paths and locate CSV files
 
 
 ## **🔮 Future Roadmap (v2.0)**
 
 What features would you add if you had more time or a larger budget?
 
-_Generated as part of the \[Course Name] Production Deliverables._
-
-__
+- Add a matplotlib graph showing win rate evolution across rounds
+- Implement adaptive strategies that learn from previous rounds
+- Allow multiple human players to connect and bid simultaneously in real time
+  
