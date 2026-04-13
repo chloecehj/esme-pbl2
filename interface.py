@@ -261,9 +261,7 @@ class App(tk.Tk):
                 f"Price = {wp} |" 
                 f"Revenue: {r['revenue']:.2f}") 
 
-# ─────────────────────────────────────────────────────────
-    # TAB 3 — Play vs AI
-    # ─────────────────────────────────────────────────────────
+# TAB 3 — Play vs AI
 
     def _tab_human(self, nb):    # create the tab frame and add it to the notebook
         f = tk.Frame(nb, bg=DARK)
