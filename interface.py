@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog, messagebox
 import os, threading
 
-from main import (load_single_round_csv, load_multi_round_csv, run_round, run_multi_rounds, bid_cost, strategy_random, strategy_low_bias, strategy_avoid_zero, strategy_smart)
+from main import (load_single_round_csv, load_multi_round_csv, run_round, run_multi_rounds, bid_cost, strategy_random, strategy_low_bias, strategy_avoid_zero)
 
 
 
