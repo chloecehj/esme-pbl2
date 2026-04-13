@@ -1,13 +1,14 @@
-# **📦 \[Project Name]**
+# **📦 LowBid**
 
 **MVP Status:** \[e.g., v1.0-Production]
 
-**Group Members:** Name 1, Name 2, Name 3, Name 4
+**Group Members:** Allaire Chloé, Avenas Sarah, Jaber Nour, Merdji Camy, Bisiaux Clara
 
 
 ## **🎯 Project Overview**
 
 Provide a concise (2-3 sentence) description of what your application does and the specific problem it solves. Why did you build this?
+Our application allows users to play and simulate a bid system where the lowest unique bid wins. You can play against AI players or upload data files to analyze strategies, determine the winner, and view detailed statistics. It uses a Binary Search Tree (BST) to sort bids and efficiently find the winning bid.
 
 
 ## **🚀 Quick Start (Architect Level: < 60s Setup)**
