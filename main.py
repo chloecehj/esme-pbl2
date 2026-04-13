@@ -140,36 +140,6 @@ def strategy_low_bias(player, max_price=20):
 def strategy_avoid_zero(player, max_price=20):
     return random.randint(2, max_price)
 
-# Strategy 4: use the history of past rounds to make a smarter choice
-def strategy_smart(player, max_price=20, history=None):
-
-    # no history yet, just pick a small random price to start
-    if history is None or len(history) == 0:
-        return random.randint(1, max_price // 4)
-
-    # count how many times each price was played in the last 10 rounds
-    frequences = {}
-    for ronde in history[-10:]:
-        for _, p in ronde:
-            if p not in frequences:
-                frequences[p] = 0
-            frequences[p] += 1
-
-    # find the smallest price that appeared exactly once (was unique)
-    # that price had a good chance of winning, so we try it again
-    for prix in range(0, max_price + 1):
-        if frequences.get(prix, 0) == 1:
-            return prix
-
-    # if no price was unique, find the smallest price nobody played
-    # an unplayed price is very likely to be unique this round
-    for prix in range(0, max_price + 1):
-        if prix not in frequences:
-            return prix
-
-    # last resort: everything has been played, just pick a small random price
-    return random.randint(0, max_price // 4)
-
 
 # dictionary that maps strategy names to their functions
 # used in gui.py to call a strategy by name
@@ -177,6 +147,5 @@ STRATEGIES = {
     "Random":    strategy_random,
     "LowBias":   strategy_low_bias,
     "AvoidZero": strategy_avoid_zero,
-    "Smart":     strategy_smart,
 }
 
