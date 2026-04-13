@@ -141,4 +141,123 @@ class App(tk.Tk):
       log(w, f"  Average cost/bid : {avg_cost:.2f}")
 
 
-#TAB2 : 
+#TAB2 : Multi-Round (500 rounds CSV) 
+
+    def _tab_multi(self, nb): 
+        f = tk.Frame(nb, bg=DARK) # create a frame in the notebook + background color
+        nb.add(f, text="  Multi-manches (500×40)  ") # add this frame as a new tab + name 
+        pf = tk.Frame(f, bg=DARK); pf.pack(fill="x", padx=10, pady=6) # creates + displays frame to input parameters
+
+        self._param_row(pf, "base_cost", self.base_cost) # create input fields for base cost and alpha 
+        self._param_row(pf, "alpha (α)", self.alpha) 
+
+        ff = tk.Frame(f, bg=DARK); ff.pack(fill="x", padx=10) # create + display frame for file selection
+
+        tk.Label(ff, text="CSV file :", bg=DARK, fg=MUTED, 
+                 font=("Helvetica", 10)).pack(side="left") # text + color + places it on the left
+
+        self.multi_path = tk.StringVar(value=csv_path("lowbid_multi_manches_500x40.csv")) # variable storing the path of the csv file
+
+        tk.Entry(ff, textvariable=self.multi_path, width=52, 
+                 bg="#313244", fg=TEXT, insertbackground="white", 
+                 relief="flat", font=("Helvetica", 9)).pack(side="left", padx=4) # entry fiel displaying file path
+
+        tk.Button(ff, text="…", command=self._browse_multi, 
+                  bg="#313244", fg=TEXT, relief="flat").pack(side="left") # button to open file explorer
+
+        bf = tk.Frame(f, bg=DARK); bf.pack(pady=6) # frame for the button
+
+        tk.Button(bf, text="Run simulation", command=self._run_multi, # button that lauches simulation
+                  bg=RED, fg=DARK, font=("Helvetica", 11, "bold"), 
+                  relief="flat", padx=12, pady=5).pack(side="left", padx=6) 
+
+        self.multi_status = tk.Label(bf, text="", bg=DARK, fg=YELLOW, 
+                                      font=("Helvetica", 10)) # show status
+        self.multi_status.pack(side="left") 
+        self.log_multi = self._log_widget(f) # log scrollable text
+
+    def _browse_multi(self): 
+        p = filedialog.askopenfilename(filetypes=[("CSV", "*.csv")]) # allows only csv files
+
+        if p: 
+            self.multi_path.set(p) # if user selcts file updates the path variable 
+
+    def _run_multi(self): 
+        clear(self.log_multi) # clear log output
+        self.multi_status.config(text="Loading...") # loading status
+        self.update() # to display the status immediately 
+
+        bc, al = self.base_cost.get(), self.alpha.get() # get parameter from input above
+        path   = self.multi_path.get() # get csv file selected
+        w      = self.log_multi # shortcut for log widget
+
+        def work(): 
+            try: # load all rounds form csv file
+                rounds_data = load_multi_round_csv(path) 
+
+            except Exception as e: 
+                self.after(0, lambda: log(w, f"Erreur : {e}")) # if error displays it in log
+                return 
+
+            summary, round_results, revenues = run_multi_rounds(rounds_data, bc, al) # run simulation on all rounds
+
+            self.after( # sends result to main thread
+                0, 
+                lambda: self._display_multi(
+                    w, summary, round_results, revenues, path, bc, al
+                )
+            ) 
+
+        threading.Thread(target=work, daemon=True).start() # starts thread
+
+    def _display_multi(self, w, summary, round_results, revenues, path, bc, al): 
+        self.multi_status.config(text="Done") # update status
+
+        n = len(round_results) # nb of rounds
+
+        log(w, f"File : {os.path.basename(path)}") 
+        log(w, f"Round : {n}  |  base_cost={bc}  α={al}\n") # displays file infos
+ 
+#count winners
+        win_counts = {} # dictionnary player:wins
+        no_winner = 0 # for rounds without winners
+
+        for r in round_results: 
+            if r["winner"]: # +1 wins for the player
+                win_counts[r["winner"]] = win_counts.get(r["winner"], 0) + 1 
+
+            else: # if no winner for the round
+                no_winner += 1 
+
+# DISPLAY STATS
+        log(w, f"No winner rounds : {no_winner} / {n}") 
+        log(w, f"Average seller revenue : {sum(revenues)/n:.2f}") 
+        log(w, f"Total seller revenue : {sum(revenues):.2f}\n") 
+
+        log(w, "PLAYER RANKING (top 15)") 
+        log(w, f"{'Players':<12} {'Wins':>10} {'Win rate':>9} {'Average cost':>12} {'Average revenue':>14}") # header row
+        log(w, "─" * 62) # separating lines
+
+        top = sorted(summary.items(), key=lambda x: -x[1]["wins"])[:15] # sorts player by number of wins
+
+        for p, s in top: # shows player stat
+            log(w, 
+                f"{p:<12} {s['wins']:>10}"
+                f"{s['win_rate']*100:>7.1f}%" 
+                f"  {s['avg_cost']:>10.2f}"  
+                f"{s['avg_profit']:>13.2f}"
+            ) 
+
+    # Show 5 sample rounds 
+
+        log(w, "\nSAMPLE (first 5 rounds)") 
+
+        for r in round_results[:5]: # 5 first rounds
+            wp = r["winner_price"] 
+            winner = r["winner"] or "—" 
+            log(w, 
+                f"Round {r['round_id']:>3} |"
+                f"Winner: {winner:<10} |"
+                f"Price = {wp} |" 
+                f"Revenue: {r['revenue']:.2f}") 
+ 
