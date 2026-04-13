@@ -94,51 +94,51 @@ class App(tk.Tk):
         bc, al = self.base_cost.get(), self.alpha.get()
         path = self.demo_path.get()
 
-      try:
+        try:
           bids = load_single_round_csv(path)
-      except Exception as e:
+        except Exception as e:
           log(w, f"Loading error : {e}"); return
       #run game
-      result = run_round(bids, bc, al)
+        result = run_round(bids, bc, al)
 
-      log(w, f"File : {os.path.basename(path)}")  #show path
-      log(w, f"Numer of bids : {len(bids)}  |  base_cost={bc}  α={al}\n")  #show stats
-      for player, price in bids:
+        log(w, f"File : {os.path.basename(path)}")  #show path
+        log(w, f"Numer of bids : {len(bids)}  |  base_cost={bc}  α={al}\n")  #show stats
+        for player, price in bids:
           log(w, f"  {player:<10} → price {price:<5}  cost: {bid_cost(price,bc,al):.2f}")  #show cost
 
-      log(w, "\n ~ BST IN-ORDER (sorted prices)")
-      for price, players in result["inorder"]:
+        log(w, "\n ~ BST IN-ORDER (sorted prices)")
+        for price, players in result["inorder"]:
           tag = "Unique" if len(players) == 1 else f"  {len(players)} players"
           log(w, f"  price{price:<6} players={players}  {tag}")  #show BST
 
-      #show results
-      log(w, "\n ~ RESULT ~")
-      if result["winner"]:
+        #show results
+        log(w, "\n ~ RESULT ~")
+        if result["winner"]:
           wp = result["winner_price"]
           log(w, f"  🏆 Winner : {result['winner']}  with price {wp}")
           succ = result["bst"].successor(wp)
           pred = result["bst"].predecessor(wp)
           log(w, f"     Successor  of {wp} in the BST : {succ}")
           log(w, f"     Predecessor of {wp} in the BST : {pred}")
-      else:
+        else:
           log(w, "  No unique price → round cancelled, no winner.")
 
-      log(w, f"\n  Seller revenue : {result['revenue']:.2f}")
+        log(w, f"\n  Seller revenue : {result['revenue']:.2f}")
 
-      #who paid what
-      log(w, "\n ~ COST BY PLAYER ~")
-      for p, c in sorted(result["costs"].items(), key=lambda x: -x[1]):
+        #who paid what
+        log(w, "\n ~ COST BY PLAYER ~")
+        for p, c in sorted(result["costs"].items(), key=lambda x: -x[1]):
           log(w, f"  {p:<10} paid {c:.2f}")
 
-      #show stats
-      total_bids   = len(bids)
-      unique_prices = sum(1 for _, pl in result["inorder"] if len(pl) == 1)
-      log(w, f"\n ~ STATISTICS ~")
-      log(w, f"  Total bids : {total_bids}")
-      log(w, f"  Unique prices : {unique_prices}")
-      log(w, f"  Non-unique prices : {len(result['inorder']) - unique_prices}")
-      avg_cost = result["revenue"] / total_bids if total_bids else 0
-      log(w, f"  Average cost/bid : {avg_cost:.2f}")
+        #show stats
+        total_bids   = len(bids)
+        unique_prices = sum(1 for _, pl in result["inorder"] if len(pl) == 1)
+        log(w, f"\n ~ STATISTICS ~")
+        log(w, f"  Total bids : {total_bids}")
+        log(w, f"  Unique prices : {unique_prices}")
+        log(w, f"  Non-unique prices : {len(result['inorder']) - unique_prices}")
+        avg_cost = result["revenue"] / total_bids if total_bids else 0
+        log(w, f"  Average cost/bid : {avg_cost:.2f}")
 
 
 #TAB2 : Multi-Round (500 rounds CSV) 
