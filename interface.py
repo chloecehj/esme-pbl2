@@ -260,4 +260,93 @@ class App(tk.Tk):
                 f"Winner: {winner:<10} |"
                 f"Price = {wp} |" 
                 f"Revenue: {r['revenue']:.2f}") 
- 
+
+# ─────────────────────────────────────────────────────────
+    # TAB 3 — Play vs AI
+    # ─────────────────────────────────────────────────────────
+
+    def _tab_human(self, nb):    # create the tab frame and add it to the notebook
+        f = tk.Frame(nb, bg=DARK)
+        nb.add(f, text="  Play vs AI  ")
+
+        pf = tk.Frame(f, bg=DARK); pf.pack(fill="x", padx=10, pady=6)
+        self._param_row(pf, "base_cost", self.base_cost)    # parameter row: base_cost and alpha
+        self._param_row(pf, "alpha (α)", self.alpha)
+
+        # row with the bid input spinbox and submit button
+        bf = tk.Frame(f, bg=DARK); bf.pack(pady=4)
+        tk.Label(bf, text="Your bid:", bg=DARK, fg=TEXT,
+                 font=("Helvetica", 11)).pack(side="left", padx=4)
+        # spinbox lets the player pick any integer between 0 and 200
+        tk.Spinbox(bf, from_=0, to=200, textvariable=self.human_bid, width=6,
+                   font=("Helvetica", 11)).pack(side="left")
+        # clicking Submit calls _run_human
+        tk.Button(bf, text="▶  Submit", command=self._run_human,
+                  bg=GREEN, fg=DARK, font=("Helvetica", 11, "bold"),
+                  relief="flat", padx=10, pady=4).pack(side="left", padx=8)
+
+        # label that shows the win counter, updated after each round
+        self.score_label = tk.Label(f, text="Wins: 0 / 0",
+                                     bg=DARK, fg=YELLOW, font=("Helvetica", 11, "bold"))
+        self.score_label.pack()
+
+        # scrollable text area where round results are displayed
+        self.log_human = self._log_widget(f, height=18)
+
+        # counters to track the player's score across rounds
+        self.human_wins = 0
+        self.human_rounds = 0
+
+    def _run_human(self):
+        # called every time the player clicks Submit
+        clear(self.log_human)
+        w = self.log_human
+        bc, al = self.base_cost.get(), self.alpha.get()
+        hp = self.human_bid.get()
+
+        # each bot is assigned a strategy function from engine.py
+        bots = {
+            "Alice (Rnd)":    strategy_random,
+            "Bob (Low)":      strategy_low_bias,
+            "Carol (NoZero)": strategy_avoid_zero,
+        }
+
+        # build the full list of bids: human first, then each bot calls its strategy 
+        # fn(p, 50) calls the strategy function with the bot name and max_price=50
+        bids = [("You", hp)] + [(p, fn(p, 50)) for p, fn in bots.items()]  
+
+        result = run_round(bids, bc, al)
+        self.human_rounds += 1       # run the auction: builds the BST and finds the lowest unique price
+
+        log(w, "=== BIDS ===") # display each bid with its cost (base_cost + alpha / (price+1))
+        for player, price in bids:
+            log(w, f"  {player:<14} → {price:<5}  cost: {bid_cost(price,bc,al):.2f}")
+
+        log(w, "\n=== BST IN-ORDER ===")
+        for price, players in result["inorder"]:        # display the BST in-order traversal: prices sorted from lowest to highest
+            tag = "★" if len(players) == 1 else " "    # ★ means only one player bid that price (unique)
+            log(w, f"  {tag} price={price:<5} → {players}")
+
+        log(w, "\n=== RESULT ===")
+        if result["winner"] == "You":
+            self.human_wins += 1
+            log(w, f"  🎉 YOU WIN at price {result['winner_price']}!")        # show the winner of this round
+        elif result["winner"]:
+            log(w, f"  {result['winner']} wins at price {result['winner_price']}.")
+        else:
+            log(w, "  No unique bid → no winner this round.")
+
+        log(w, f"\n  Your cost this round : {result['costs'].get('You', 0):.2f}")
+        log(w, f"  Seller revenue       : {result['revenue']:.2f}")
+        log(w, "\n  Tip: pick a price others are likely to avoid.")
+        log(w, "  Very low prices cost more because of the risk premium α/(price+1)!")
+
+        self.score_label.config(
+            text=f"Wins: {self.human_wins} / {self.human_rounds}")    # refresh the win counter label at the top of the tab
+
+
+# ──────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
